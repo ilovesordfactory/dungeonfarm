@@ -1,6 +1,6 @@
 function getPodiumSword()
 	for _,sword in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-		if sword:WaitForChild("Config").Rarity.Value <= 131 and sword:WaitForChild("Config").Nickname.Value ~= "Whitelist" then
+		if sword:WaitForChild("Config").Rarity.Value <= 127 and sword:WaitForChild("Config").Nickname.Value ~= "Whitelist" then
 			game.Players.LocalPlayer.Character.Humanoid:EquipTool(sword)
 			game:GetService("ReplicatedStorage").Framework.RemoteEvent:FireServer(0,"BackpackServer","Drop",{})
 		end
