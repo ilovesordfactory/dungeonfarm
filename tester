@@ -1,14 +1,3 @@
-repeat wait() until game:IsLoaded()
-wait(4)
-local args = {
-		[1] = game:GetService("ReplicatedStorage").Data[game.Players.LocalPlayer.Name].Stats,
-		[2] = workspace:FindFirstChild(game.Players.LocalPlayer.Name.."'s Base"),
-		[3] = game.Players.LocalPlayer.Name,
-		[4] = "Magma Hills"}
-	game:GetService("ReplicatedStorage").Events.ToMap:FireServer(unpack(args))
-wait(1)
-game.Players.LocalPlayer.Character.Humanoid:MoveTo(-11234.08203125, 80.93721008300781, -17794.685546875)
-
 function getPodiumSword()
 	for _,sword in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
 		if sword:WaitForChild("Config").Rarity.Value <= 131 and sword:WaitForChild("Config").Nickname.Value ~= "Whitelist" then
