@@ -6,7 +6,7 @@ function getPodiumSword()
 		end
 	end
 	wait(2)
-	game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = game.Workspace:WaitForChild("MagmaDungeon"):WaitForChild("EndModule").Parts.Stands["1"].Part.CFrame*CFrame.new(0,2,0)
+	game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = game.Workspace:WaitForChild("MagmaDungeon"):WaitForChild("EndModule").Parts.Stands["1"].Pad.CFrame*CFrame.new(0,2,0)
 end
 function getChests()
 	chests = {}
