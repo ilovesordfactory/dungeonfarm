@@ -1,199 +1,176 @@
-function getPodiumSword()
-	for _,sword in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-		if sword:WaitForChild("Config").Rarity.Value <= 131 and sword:WaitForChild("Config").Nickname.Value ~= "Whitelist" then
-			game.Players.LocalPlayer.Character.Humanoid:EquipTool(sword)
-			game:GetService("ReplicatedStorage").Framework.RemoteEvent:FireServer(0,"BackpackServer","Drop",{})
-		end
-	end
-	wait(2)
-	game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = game.Workspace:WaitForChild("MagmaDungeon"):WaitForChild("EndModule").Pad.Stands["1"].Part.CFrame
+-- auto dungeon 
+plr = game.Players.LocalPlayer
+char = plr.Character
+function DropBadSwords()
+    for _,sword in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+        if sword:FindFirstChild("Config").Rarity.Value < 172 and sword:FindFirstChild("Config").Nickname.Value ~= "Whitelist" then
+            game.Players.LocalPlayer.Character.Humanoid:EquipTool(sword)
+            game:GetService("ReplicatedStorage").Framework.RemoteEvent:FireServer(0,"BackpackServer","Drop",{})
+        end
+    end
 end
-function getChests()
-	chests = {}
-	chestnames = {"WoodSilver","WoodGold","MagmaChest","ExtraMagmaChest"}
-	counter = 0
-	hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
-	for _,chest in pairs(game.Workspace:WaitForChild("MagmaDungeon"):GetDescendants()) do
-		for _,v in pairs(chestnames) do
-			if v == chest.Name then
-				table.insert(chests,chest)
-			end
-		end
-	end
-
-	amountofChests = #chests
-
-	repeat
-		counter = counter+1
-		hrp.CFrame = chests[counter]:GetModelCFrame()*CFrame.new(3.5,0,0)
-		task.wait(1)
-	until counter == amountofChests
+function equipWhitelist()
+    for i,v in pairs(plr.Backpack:GetChildren()) do
+        if v:FindFirstChild("Config") then
+            if v:FindFirstChild("Config"):FindFirstChild("Nickname") then
+                if v:FindFirstChild("Config"):FindFirstChild("Nickname").Value == "Whitelist" then
+                    char.Humanoid:EquipTool(v)
+                end
+            end
+        end
+    end
 end
-function startFarm(tof)
-	Player = game.Players.LocalPlayer
-	Character = Player.Character or Player.CharacterAdded:Wait()
-	active = tof
-	mobsTable = {}
-	mobsFolder = workspace.Mobs
-	target = nil
-	spawn(function()
-		while active do task.wait()
-			if target and active then
-				game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = target.CFrame * CFrame.new(0, 0, 1)
-			end
-			if game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Tool") then
-				if game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Tool"):WaitForChild("Config").Nickname.Value ~= "Whitelist" then
-					for _,sword in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-						if sword:WaitForChild("Config").Nickname.Value == "Whitelist" then
-							Character.Humanoid:EquipTool(sword)
-						end
-					end
-				end
-				game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Tool"):Activate()
-			else
-				for _,sword in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-					if sword:WaitForChild("Config").Nickname.Value == "Whitelist" then
-						Character.Humanoid:EquipTool(sword)
-					end
-				end
-			end
-		end
-	end)
-
-	for _, mob in ipairs(mobsFolder:GetChildren()) do
-		if mob.Name == "Borock" or mob.Name == "Iron Slayer" then
-			mobsTable[mob] = mob
-		end
-	end
-
-	mobsFolder.DescendantAdded:Connect(function(descendant)
-		if descendant.Name == "The Abomination" or descendant.Name == "Iron Slayer" or descendant.Name == "Borock" then
-			mobsTable[descendant] = descendant
-		end
-	end)
-
-	mobsFolder.ChildRemoved:Connect(function(child)
-		if mobsTable[child] then
-			mobsTable[child] = nil
-		end
-	end)
-	spawn(function()
-		while active do
-			for _, mob in pairs(mobsTable) do
-				if mob:FindFirstChild("HumanoidRootPart") then
-					local humanoid = mob:FindFirstChild("Humanoid")
-					target = mob.HumanoidRootPart
-					while active do
-						if not humanoid or humanoid.Health == 0 then
-							target:Destroy()
-							humanoid:Destroy()
-							break
-						end
-						wait()
-					end
-				end
-			end
-			wait()
-		end
-	end)
+function collectChests()
+    chests = {}
+    counter = 0
+    for _,chest in pairs(game.Workspace:WaitForChild("MagmaDungeon"):GetDescendants()) do
+        if chest.Name == "WoodSilver" or chest.Name == "WoodGold" or chest.Name == "MagmaChest" or chest.Name == "ExtraMagmaChest" or chest.Name == "VoidChest" then
+            table.insert(chests,chest)
+        end
+    end
+    amountofChests = #chests
+    DropBadSwords()
+    wait(1)
+    char.Humanoid:UnequipTools()
+    wait(1)
+    equipWhitelist()
+    repeat
+        oldGems = game.ReplicatedStorage.Data[plr.Name].Stats.Gems.Value
+        counter = counter+1
+        char.HumanoidRootPart.CFrame = chests[counter]:GetModelCFrame()
+        timer2 = 0
+        repeat wait(0.5) 
+            timer2 = timer2+0.5
+            equipWhitelist()
+        until oldGems < game.ReplicatedStorage.Data[plr.Name].Stats.Gems.Value or timer2 == 1.5
+    until counter == amountofChests
+    DropBadSwords()
+    wait(0.5)
+    for _,podiumsword in pairs(game.Workspace:WaitForChild("MagmaDungeon").EndModule.Parts.Stands:GetDescendants()) do
+        if podiumsword:IsA("TextLabel") then
+            if podiumsword.Text == game.Players.LocalPlayer.Name then
+                game:GetService("TweenService"):Create(char.HumanoidRootPart,TweenInfo.new(0.5),{CFrame = podiumsword.Parent.Parent.Parent.Pad.CFrame}):Play()
+                wait(1)
+                game:GetService("TweenService"):Create(char.HumanoidRootPart,TweenInfo.new(0.5),{CFrame = podiumsword.Parent.Parent.Parent.Pad.CFrame}):Play()
+            end
+        end
+    end
+    wait(0.1)
+    char.Humanoid:UnequipTools()
+    wait(0.3)
+    DropBadSwords()
+    wait(0.5)
+    game.ReplicatedStorage.Framework.RemoteEvent:FireServer(0,"UIServer","Teleport",{})
+    repeat wait() until game.Workspace:FindFirstChild("MagmaDungeon") == nil
 end
-function teleportToBossArea()
-	game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = game.Workspace:WaitForChild("MagmaDungeon").EndModule:WaitForChild("Start").CFrame*CFrame.new(0,5,30)
+function enterDungeon()
+    if game.Workspace.Maps:FindFirstChild("Magma Hills") == nil then
+        repeat wait(1.5)
+            game.ReplicatedStorage.Events.ToMap:FireServer(game.ReplicatedStorage.Data:FindFirstChild(game.Players.LocalPlayer.Name).Stats,game.workspace:FindFirstChild(tostring(game.Players.LocalPlayer.Name.."'s Base")),game.Players.LocalPlayer.Name,"Magma Hills")
+        until game.Workspace.Maps:FindFirstChild("Magma Hills") ~= nil
+    else
+        if game.Workspace:FindFirstChild("MagmaDungeon") == nil then
+            repeat wait(0.5)
+                game:GetService("TweenService"):Create(char.HumanoidRootPart,TweenInfo.new(1),{CFrame = game.Workspace.Maps["Magma Hills"].DungeonMatchmaking.MatchmakingPad.CFrame*CFrame.new(0,1,0)}):Play()
+            until game.Workspace:FindFirstChild("MagmaDungeon") ~= nil or farming == false
+        end
+    end
 end
-function startBossFarm(tof)
-	bossFolder = {}
-	targetboss = nil
-	farmboss = tof
-	for _,boss in pairs(mobsFolder:GetChildren()) do
-		if boss.Name == "The Abomination" then
-			table.insert(bossFolder,boss)
-		end
-	end
-	spawn(function()
-		while true do wait()
-			for _,bosses in pairs(bossFolder) do
-				if bosses:FindFirstChild("HumanoidRootPart") then
-					targetboss = bosses:WaitForChild("HumanoidRootPart")
-					bosshumanoid = bosses:WaitForChild("Humanoid")
-				end
-				while true do wait()
-					if not bosshumanoid or bosshumanoid.Health == 0 then
-						targetboss = nil
-						break
-					end
-				end
-			end
-		end			
-	end)
-	spawn(function()
-		while farmboss do wait()
-			if targetboss == nil then
-				break
-			end
-			Character.HumanoidRootPart.CFrame = targetboss.CFrame*CFrame.new(0,0,3.5)
-			if Character:FindFirstChildWhichIsA("Tool") then
-				Character:FindFirstChildWhichIsA("Tool"):Activate()
-			end
-		end
-	end)
+function Farm()
+    if game.Workspace:FindFirstChild("MagmaDungeon") then
+        while true do wait()
+                mobTable = {}
+                for i,v in pairs(game.Workspace.Mobs:GetChildren()) do
+                    if v.Name == "Borock" or v.Name == "Iron Slayer" or v.Name == "The Abomination" then
+                        table.insert(mobTable,v)
+                    end
+                end
+            
+            for i,v in pairs(mobTable) do
+                repeat task.wait()
+                        if char.Humanoid.Health/char.Humanoid.MaxHealth*100 >35 then
+                            char.HumanoidRootPart.CFrame = v:GetModelCFrame()*CFrame.new(0,1,2)
+                        end
+                        if v:FindFirstChild("Humanoid") == nil or v:FindFirstChild("Humanoid").Health == 0 then
+                            v:Destroy()
+                        end 
+                        if char:FindFirstChildWhichIsA("Tool") then
+                            char:FindFirstChildWhichIsA("Tool"):Activate()
+                            if char:FindFirstChildWhichIsA("Tool"):FindFirstChild("Config").Nickname.Value ~= "Whitelist" then
+                                equipWhitelist()
+                            end
+                        else
+                            equipWhitelist()
+                        end
+                until v == nil or v:FindFirstChild("Humanoid") == nil or v:FindFirstChild("Humanoid").Health == 0
+            end
+            if #mobTable == 0 then
+                print('breaking')
+                break
+            end
+        end
+    end
 end
-function resetThing()
-	game.ReplicatedStorage.Framework.RemoteEvent:FireServer(0,"UIServer","Teleport",{})
-	wait(2)
-	local args = {
-		[1] = game:GetService("ReplicatedStorage").Data[game.Players.LocalPlayer.Name].Stats,
-		[2] = workspace:FindFirstChild(game.Players.LocalPlayer.Name.."'s Base"),
-		[3] = game.Players.LocalPlayer.Name,
-		[4] = "Magma Hills"}
-	game:GetService("ReplicatedStorage").Events.ToMap:FireServer(unpack(args))
-	wait(2)
-	local args = {
-		[1] = game:GetService("ReplicatedStorage").Data[game.Players.LocalPlayer.Name].Stats,
-		[2] = workspace:FindFirstChild(game.Players.LocalPlayer.Name.."'s Base"),
-		[3] = game.Players.LocalPlayer.Name,
-		[4] = "Magma Hills"}
-	game:GetService("ReplicatedStorage").Events.ToMap:FireServer(unpack(args))
+function teleportToBoss()
+    if game.Workspace:FindFirstChild("MagmaDungeon") ~= nil then
+        print('tping to boss')
+        char.HumanoidRootPart.CFrame = game.workspace.MagmaDungeon.EndModule.Parts.FinalBossSpawn.CFrame
+    end
 end
+for i,v in pairs(plr.PlayerGui:GetChildren()) do
+    if v.Name == "MassiveCock" then
+        v:Destroy()
+    end
+end
+local gui = Instance.new("ScreenGui",game.Players.LocalPlayer.PlayerGui)
+local mainframe = Instance.new("Frame",gui)
+local textbutton = Instance.new("TextButton",mainframe)
+local textlabel = Instance.new("TextLabel",mainframe)
 
-local Player = game.Players.LocalPlayer;
-local Character = Player.Character or Player.CharacterAdded:Wait()
 
-local function CheckTime()
-	if game.Lighting.ClockTime > 18.25 and game.Lighting.ClockTime < 24 or game.Lighting.ClockTime < 6 then 
-		return true 
-	else
-		return false
-	end
-end 
+farming = false
+gui.Name = "MassiveCock"
+mainframe.Position = UDim2.new(0.1,0,0.1,0)
+mainframe.Visible = true
+mainframe.Size = UDim2.new(0.2,0,0.1,0)
+textlabel.Size = UDim2.new(1,0,-0.5,0)
+textbutton.Size = UDim2.new(1,0,1,0)
+textbutton.Text = "Farming: OFF"
+textbutton.BackgroundColor3 = Color3.new(255,0,0)
+textbutton.TextScaled = true
+textbutton.Font = "FredokaOne"
+textlabel.Text = "dungeon farm toggle\ncompletes dungeon if its in one"
+textlabel.TextScaled = true
+textlabel.BackgroundColor3 = Color3.new(0,0,0)
+textlabel.Font = "FredokaOne"
+textlabel.TextColor3 = Color3.new(255,255,255)
 
-local function TeleportToPad()
-	local IsNight = CheckTime();
-	if IsNight then 
-		game:GetService("TweenService"):Create(Character:FindFirstChild("HumanoidRootPart"), TweenInfo.new(5), {CFrame = game:GetService("Workspace").Maps:WaitForChild("Magma Hills").DungeonMatchmaking:WaitForChild("MatchmakingPad").CFrame}):Play()
-	end
-end
 
-function startDungeon()
-	if not active and CheckTime() == true then
-		TeleportToPad()
-		wait(13)
-		startFarm(true)
-		wait(50)
-		startFarm(false)
-		wait(0.5)
-		teleportToBossArea()
-		wait(0.5)
-		startBossFarm(true)
-		wait(15)
-		startBossFarm(false)
-		wait(1)
-		getChests()
-		wait(10)
-		getPodiumSword()
-		wait(2)
-		resetThing()
-	end
-end
-while true do wait(1)
-	startDungeon()
-end
+textbutton.MouseButton1Up:Connect(function()
+    if farming then
+        textbutton.Text = "Farming: OFF"
+        textbutton.BackgroundColor3 = Color3.new(255,0,0)
+        farming = false
+    else
+        textbutton.Text = "Farming: ON"
+        textbutton.BackgroundColor3 = Color3.new(0,255,0)
+        farming = true
+        while farming do wait()
+            if game.Players.LocalPlayer.PlayerGui.MainGui:FindFirstChild("DungeonSummary") then
+                game.Players.LocalPlayer.PlayerGui.MainGui.DungeonSummary:Destroy()
+            end
+            enterDungeon()
+            wait(2)
+            if farming == false then
+                break
+            end
+            Farm()
+            wait(15)
+            teleportToBoss()
+            wait(1)
+            Farm()
+            wait(1)
+            collectChests()
+        end
+    end
+end)
