@@ -9,6 +9,29 @@ function DropBadSwords()
         end
     end
 end
+function autoBank()
+    swordTable = {}
+    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+        if v:FindFirstChild("Config").Rarity.Value >= 172 and v.Name ~= "Whitelist" then
+            autoBankStart = true
+            table.insert(swordTable,v)
+        end
+    end
+    counter = 0
+    if #swordTable > 0 then
+        game:GetService("ReplicatedStorage").Events.ToBasePart:FireServer("Bank")
+        wait(1)
+        game:GetService("TweenService"):Create(game.Players.LocalPlayer.Character.HumanoidRootPart,TweenInfo.new(1), {CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame*CFrame.new(-30,0,0)}):Play()
+        wait(2)
+        repeat wait()
+            counter = counter+1
+            game.Players.LocalPlayer.Character.Humanoid:EquipTool(swordTable[counter])
+            wait(0.1)
+            game:GetService("ReplicatedStorage").Framework.RemoteEvent:FireServer(0,"BackpackServer","Drop",{})
+        until counter == #swordTable
+    end
+    print('no swords to bank')
+end
 function equipWhitelist()
     for i,v in pairs(plr.Backpack:GetChildren()) do
         if v:FindFirstChild("Config") then
@@ -71,12 +94,13 @@ function enterDungeon()
     else
         if game.Workspace:FindFirstChild("MagmaDungeon") == nil then
             repeat wait(0.5)
-                game:GetService("TweenService"):Create(char.HumanoidRootPart,TweenInfo.new(1),{CFrame = game.Workspace.Maps["Magma Hills"].DungeonMatchmaking.MatchmakingPad.CFrame*CFrame.new(0,1,0)}):Play()
+                game:GetService("TweenService"):Create(char.HumanoidRootPart,TweenInfo.new(1),{CFrame = game.Workspace.Maps["Magma Hills"].DungeonMatchmaking.MatchmakingPad.CFrame*CFrame.new(0,2,0)}):Play()
             until game.Workspace:FindFirstChild("MagmaDungeon") ~= nil or farming == false
         end
     end
 end
 function Farm()
+    game:GetService("ReplicatedStorage").Framework.RemoteFunction:InvokeServer(0,"SoulTankService","AddSouls",{})
     if game.Workspace:FindFirstChild("MagmaDungeon") then
         while true do wait()
                 mobTable = {}
@@ -117,8 +141,18 @@ function teleportToBoss()
         char.HumanoidRootPart.CFrame = game.workspace.MagmaDungeon.EndModule.Parts.FinalBossSpawn.CFrame
     end
 end
+function RandomVariable(length)
+	local res = ""
+	for i = 1, length do
+		res = res .. string.char(math.random(1, 122))
+	end
+	return res
+end
+
+randomstring = RandomVariable(100)
+
 for i,v in pairs(plr.PlayerGui:GetChildren()) do
-    if v.Name == "MassiveCock" then
+    if string.len(v.Name) == 100 then
         v:Destroy()
     end
 end
@@ -129,33 +163,79 @@ local textlabel = Instance.new("TextLabel",mainframe)
 
 
 farming = false
-gui.Name = "MassiveCock"
+gui.Name = tostring(randomstring)
 mainframe.Position = UDim2.new(0.1,0,0.1,0)
 mainframe.Visible = true
 mainframe.Size = UDim2.new(0.2,0,0.1,0)
 textlabel.Size = UDim2.new(1,0,-0.5,0)
 textbutton.Size = UDim2.new(1,0,1,0)
-textbutton.Text = "Farming: OFF"
-textbutton.BackgroundColor3 = Color3.new(255,0,0)
+textbutton.Text = "Farming: ❌"
+textbutton.BackgroundColor3 = Color3.new(0,0,0)
 textbutton.TextScaled = true
-textbutton.Font = "FredokaOne"
-textlabel.Text = "dungeon farm toggle\ncompletes dungeon if its in one"
+textbutton.Font = "GothamBold"
+textlabel.Text = "Don't Disable and Re-Enable During Dungeon\nPress Q to Hide/Show GUI"
 textlabel.TextScaled = true
 textlabel.BackgroundColor3 = Color3.new(0,0,0)
-textlabel.Font = "FredokaOne"
+textlabel.Font = "GothamBold"
 textlabel.TextColor3 = Color3.new(255,255,255)
+textbutton.TextColor3 = Color3.new(255,0,0)
+textbutton.BorderSizePixel = 3.5 
+textlabel.BorderSizePixel = 3.5
+textlabel.BorderColor3 = Color3.new(255,0,0)
+textbutton.BorderColor3 = Color3.new(255,0,0)
 
-
+-- We must get the UserInputService before we can use it
+local UserInputService = game:GetService("UserInputService")
+ 
+-- A sample function providing one usage of InputBegan
+UserInputService.InputBegan:Connect(function(inputKey)
+    if inputKey.KeyCode == Enum.KeyCode.Q then
+        if mainframe.Visible == false then
+            mainframe.Visible = true
+        else
+            mainframe.Visible = false
+        end
+    end
+end)
 textbutton.MouseButton1Up:Connect(function()
     if farming then
-        textbutton.Text = "Farming: OFF"
-        textbutton.BackgroundColor3 = Color3.new(255,0,0)
+        textbutton.Text = "Farming: ❌"
+        textbutton.TextColor3 = Color3.new(255,0,0)
+        textlabel.BorderColor3 = Color3.new(255,0,0)
+        textbutton.BorderColor3 = Color3.new(255,0,0)
         farming = false
     else
-        textbutton.Text = "Farming: ON"
-        textbutton.BackgroundColor3 = Color3.new(0,255,0)
+        textbutton.Text = "Farming: ✅"
+        textbutton.TextColor3 = Color3.new(0,255,0)
+        textlabel.BorderColor3 = Color3.new(0,255,0)
+        textbutton.BorderColor3 = Color3.new(0,255,0)
         farming = true
+        foundSword = false
         while farming do wait()
+            for i,v in pairs(plr.Backpack:GetChildren()) do
+                if v:FindFirstChild("Config") then
+                    if v:FindFirstChild("Config"):FindFirstChild("Nickname") then
+                        if v:FindFirstChild("Config").Nickname.Value == "Whitelist" then
+                            foundSword = true
+                        end
+                    end
+                end
+            end
+            if foundSword == false then
+                game:GetService("StarterGui"):SetCore("SendNotification",{
+                    Title = "No Whitelist Sword Found", -- Required
+                    Text = "Please Name your farming sword Whitelist in the rebrander", -- Required
+                    Icon = "", -- Optional
+                    Duration = 5
+                })
+                wait(1)
+                textbutton.Text = "Farming: ❌"
+                textbutton.TextColor3 = Color3.new(255,0,0)
+                textlabel.BorderColor3 = Color3.new(255,0,0)
+                textbutton.BorderColor3 = Color3.new(255,0,0)
+                farming = false
+                break
+            end
             if game.Players.LocalPlayer.PlayerGui.MainGui:FindFirstChild("DungeonSummary") then
                 game.Players.LocalPlayer.PlayerGui.MainGui.DungeonSummary:Destroy()
             end
@@ -165,12 +245,15 @@ textbutton.MouseButton1Up:Connect(function()
                 break
             end
             Farm()
-            wait(15)
+            wait(20)
             teleportToBoss()
             wait(1)
             Farm()
             wait(1)
             collectChests()
+            wait(1)
+            autoBank()
+            wait(1)
         end
     end
 end)
