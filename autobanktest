@@ -1,6 +1,13 @@
 -- auto dungeon 
 plr = game.Players.LocalPlayer
 char = plr.Character
+local SafetyNet = Instance.new("Part")
+SafetyNet.Name = "imverygay"
+SafetyNet.Shape = "Block"
+SafetyNet.Anchored = true
+SafetyNet.Parent = game.Workspace
+SafetyNet.Size = Vector3.new(10, 10, 10)
+SafetyNet.CFrame = CFrame.new(-11000, 132, -17800)
 function DropBadSwords()
     for _,sword in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
         if sword:FindFirstChild("Config").Rarity.Value < 172 and sword:FindFirstChild("Config").Nickname.Value ~= "Whitelist" then
@@ -10,27 +17,29 @@ function DropBadSwords()
     end
 end
 function autoBank()
-    swordTable = {}
-    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-        if v:FindFirstChild("Config").Rarity.Value >= 172 and v.Name ~= "Whitelist" then
-            autoBankStart = true
-            table.insert(swordTable,v)
+    if farming then
+        swordTable = {}
+        for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+            if v:FindFirstChild("Config").Rarity.Value >= 172 and v.Name ~= "Whitelist" then
+                autoBankStart = true
+                table.insert(swordTable,v)
+            end
         end
+        counter = 0
+        if #swordTable > 0 then
+            game:GetService("ReplicatedStorage").Events.ToBasePart:FireServer("Bank")
+            wait(1)
+            game:GetService("TweenService"):Create(game.Players.LocalPlayer.Character.HumanoidRootPart,TweenInfo.new(1), {CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame*CFrame.new(-30,0,0)}):Play()
+            wait(2)
+            repeat wait()
+                counter = counter+1
+                game.Players.LocalPlayer.Character.Humanoid:EquipTool(swordTable[counter])
+                wait(0.1)
+                game:GetService("ReplicatedStorage").Framework.RemoteEvent:FireServer(0,"BackpackServer","Drop",{})
+            until counter == #swordTable
+        end
+        print('no swords to bank')
     end
-    counter = 0
-    if #swordTable > 0 then
-        game:GetService("ReplicatedStorage").Events.ToBasePart:FireServer("Bank")
-        wait(1)
-        game:GetService("TweenService"):Create(game.Players.LocalPlayer.Character.HumanoidRootPart,TweenInfo.new(1), {CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame*CFrame.new(-30,0,0)}):Play()
-        wait(2)
-        repeat wait()
-            counter = counter+1
-            game.Players.LocalPlayer.Character.Humanoid:EquipTool(swordTable[counter])
-            wait(0.1)
-            game:GetService("ReplicatedStorage").Framework.RemoteEvent:FireServer(0,"BackpackServer","Drop",{})
-        until counter == #swordTable
-    end
-    print('no swords to bank')
 end
 function equipWhitelist()
     for i,v in pairs(plr.Backpack:GetChildren()) do
@@ -44,19 +53,21 @@ function equipWhitelist()
     end
 end
 function collectChests()
-    chests = {}
-    counter = 0
-    for _,chest in pairs(game.Workspace:WaitForChild("MagmaDungeon"):GetDescendants()) do
-        if chest.Name == "WoodSilver" or chest.Name == "WoodGold" or chest.Name == "MagmaChest" or chest.Name == "ExtraMagmaChest" or chest.Name == "VoidChest" then
-            table.insert(chests,chest)
+    if farming then
+        chests = {}
+        counter = 0
+        for _,chest in pairs(game.Workspace:WaitForChild("MagmaDungeon"):GetDescendants()) do
+            if chest.Name == "WoodSilver" or chest.Name == "WoodGold" or chest.Name == "MagmaChest" or chest.Name == "ExtraMagmaChest" or chest.Name == "VoidChest" then
+                table.insert(chests,chest)
+            end
         end
-    end
-    amountofChests = #chests
-    DropBadSwords()
-    wait(1)
-    char.Humanoid:UnequipTools()
-    wait(1)
-    equipWhitelist()
+        amountofChests = #chests
+        DropBadSwords()
+        wait(1)
+        char.Humanoid:UnequipTools()
+        wait(1)
+        equipWhitelist()
+    
     repeat
         oldGems = game.ReplicatedStorage.Data[plr.Name].Stats.Gems.Value
         counter = counter+1
@@ -66,39 +77,44 @@ function collectChests()
             timer2 = timer2+0.5
             equipWhitelist()
         until oldGems < game.ReplicatedStorage.Data[plr.Name].Stats.Gems.Value or timer2 == 1.5
-    until counter == amountofChests
-    DropBadSwords()
-    wait(0.5)
-    for _,podiumsword in pairs(game.Workspace:WaitForChild("MagmaDungeon").EndModule.Parts.Stands:GetDescendants()) do
-        if podiumsword:IsA("TextLabel") then
-            if podiumsword.Text == game.Players.LocalPlayer.Name then
-                game:GetService("TweenService"):Create(char.HumanoidRootPart,TweenInfo.new(0.5),{CFrame = podiumsword.Parent.Parent.Parent.Pad.CFrame}):Play()
-                wait(1)
-                game:GetService("TweenService"):Create(char.HumanoidRootPart,TweenInfo.new(0.5),{CFrame = podiumsword.Parent.Parent.Parent.Pad.CFrame}):Play()
+    until counter == amountofChests or farming == false
+    end
+    if farming then
+        DropBadSwords()
+        wait(0.5)
+        for _,podiumsword in pairs(game.Workspace:WaitForChild("MagmaDungeon").EndModule.Parts.Stands:GetDescendants()) do
+            if podiumsword:IsA("TextLabel") then
+                if podiumsword.Text == game.Players.LocalPlayer.Name then
+                    game:GetService("TweenService"):Create(char.HumanoidRootPart,TweenInfo.new(0.5),{CFrame = podiumsword.Parent.Parent.Parent.Pad.CFrame}):Play()
+                    wait(1)
+                    game:GetService("TweenService"):Create(char.HumanoidRootPart,TweenInfo.new(0.5),{CFrame = podiumsword.Parent.Parent.Parent.Pad.CFrame}):Play()
+                end
             end
         end
+        wait(0.1)
+        char.Humanoid:UnequipTools()
+        wait(0.3)
+        DropBadSwords()
+        wait(0.5)
+        game.ReplicatedStorage.Framework.RemoteEvent:FireServer(0,"UIServer","Teleport",{})
+        repeat wait() until game.Workspace:FindFirstChild("MagmaDungeon") == nil
     end
-    wait(0.1)
-    char.Humanoid:UnequipTools()
-    wait(0.3)
-    DropBadSwords()
-    wait(0.5)
-    game.ReplicatedStorage.Framework.RemoteEvent:FireServer(0,"UIServer","Teleport",{})
-    repeat wait() until game.Workspace:FindFirstChild("MagmaDungeon") == nil
 end
 function enterDungeon()
     if game.Workspace.Maps:FindFirstChild("Magma Hills") == nil then
         repeat wait(1.5)
             game.ReplicatedStorage.Events.ToMap:FireServer(game.ReplicatedStorage.Data:FindFirstChild(game.Players.LocalPlayer.Name).Stats,game.workspace:FindFirstChild(tostring(game.Players.LocalPlayer.Name.."'s Base")),game.Players.LocalPlayer.Name,"Magma Hills")
         until game.Workspace.Maps:FindFirstChild("Magma Hills") ~= nil
-    else
+    end
+    wait(1)
+    game:GetService("TweenService"):Create(char.HumanoidRootPart,TweenInfo.new(1),{CFrame = game.Workspace:FindFirstChild("imverygay").CFrame*CFrame.new(0,7,0)}):Play()
+    wait(4)
         if game.Workspace:FindFirstChild("MagmaDungeon") == nil then
             repeat wait(0.5)
                 game:GetService("TweenService"):Create(char.HumanoidRootPart,TweenInfo.new(1),{CFrame = game.Workspace.Maps["Magma Hills"].DungeonMatchmaking.MatchmakingPad.CFrame*CFrame.new(0,2,0)}):Play()
             until game.Workspace:FindFirstChild("MagmaDungeon") ~= nil or farming == false
         end
     end
-end
 function Farm()
     game:GetService("ReplicatedStorage").Framework.RemoteFunction:InvokeServer(0,"SoulTankService","AddSouls",{})
     if game.Workspace:FindFirstChild("MagmaDungeon") then
@@ -109,7 +125,6 @@ function Farm()
                         table.insert(mobTable,v)
                     end
                 end
-            
             for i,v in pairs(mobTable) do
                 repeat task.wait()
                         if char.Humanoid.Health/char.Humanoid.MaxHealth*100 >35 then
@@ -126,9 +141,9 @@ function Farm()
                         else
                             equipWhitelist()
                         end
-                until v == nil or v:FindFirstChild("Humanoid") == nil or v:FindFirstChild("Humanoid").Health == 0
+                until v == nil or v:FindFirstChild("Humanoid") == nil or v:FindFirstChild("Humanoid").Health == 0 or farming == false
             end
-            if #mobTable == 0 then
+            if #mobTable == 0 or farming == false then
                 print('breaking')
                 break
             end
@@ -136,7 +151,7 @@ function Farm()
     end
 end
 function teleportToBoss()
-    if game.Workspace:FindFirstChild("MagmaDungeon") ~= nil then
+    if game.Workspace:FindFirstChild("MagmaDungeon") ~= nil and farming then
         print('tping to boss')
         char.HumanoidRootPart.CFrame = game.workspace.MagmaDungeon.EndModule.Parts.FinalBossSpawn.CFrame
     end
@@ -218,19 +233,40 @@ textbutton.MouseButton1Up:Connect(function()
                 game.Players.LocalPlayer.PlayerGui.MainGui.DungeonSummary:Destroy()
             end
             enterDungeon()
-            wait(2)
+            wait(6)
             if farming == false then
+                game.ReplicatedStorage.Framework.RemoteEvent:FireServer(0,"UIServer","Teleport",{})
                 break
             end
             Farm()
-            wait(20)
+            if farming == false then
+                game.ReplicatedStorage.Framework.RemoteEvent:FireServer(0,"UIServer","Teleport",{})
+                break
+            end
+            wait(16)
             teleportToBoss()
+            if farming == false then
+                game.ReplicatedStorage.Framework.RemoteEvent:FireServer(0,"UIServer","Teleport",{})
+                break
+            end
             wait(1)
             Farm()
+            if farming == false then
+                game.ReplicatedStorage.Framework.RemoteEvent:FireServer(0,"UIServer","Teleport",{})
+                break
+            end
             wait(1)
             collectChests()
+            if farming == false then
+                game.ReplicatedStorage.Framework.RemoteEvent:FireServer(0,"UIServer","Teleport",{})
+                break
+            end
             wait(1)
             autoBank()
+            if farming == false then
+                game.ReplicatedStorage.Framework.RemoteEvent:FireServer(0,"UIServer","Teleport",{})
+                break
+            end
             wait(1)
         end
     end
