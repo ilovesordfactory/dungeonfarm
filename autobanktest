@@ -212,30 +212,6 @@ textbutton.MouseButton1Up:Connect(function()
         farming = true
         foundSword = false
         while farming do wait()
-            for i,v in pairs(plr.Backpack:GetChildren()) do
-                if v:FindFirstChild("Config") then
-                    if v:FindFirstChild("Config"):FindFirstChild("Nickname") then
-                        if v:FindFirstChild("Config").Nickname.Value == "Whitelist" then
-                            foundSword = true
-                        end
-                    end
-                end
-            end
-            if foundSword == false then
-                game:GetService("StarterGui"):SetCore("SendNotification",{
-                    Title = "No Whitelist Sword Found", -- Required
-                    Text = "Please Name your farming sword Whitelist in the rebrander", -- Required
-                    Icon = "", -- Optional
-                    Duration = 5
-                })
-                wait(1)
-                textbutton.Text = "Farming: ❌"
-                textbutton.TextColor3 = Color3.new(255,0,0)
-                textlabel.BorderColor3 = Color3.new(255,0,0)
-                textbutton.BorderColor3 = Color3.new(255,0,0)
-                farming = false
-                break
-            end
             if game.Players.LocalPlayer.PlayerGui.MainGui:FindFirstChild("DungeonSummary") then
                 game.Players.LocalPlayer.PlayerGui.MainGui.DungeonSummary:Destroy()
             end
