@@ -186,7 +186,9 @@ textbutton.BorderColor3 = Color3.new(255,0,0)
 
 -- We must get the UserInputService before we can use it
 local UserInputService = game:GetService("UserInputService")
- 
+for _,v in pairs(getconnections(game.Players.LocalPlayer.Idled)) do
+v:Disable()
+end
 -- A sample function providing one usage of InputBegan
 UserInputService.InputBegan:Connect(function(inputKey)
     if inputKey.KeyCode == Enum.KeyCode.Q then
