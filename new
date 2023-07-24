@@ -1,0 +1,7 @@
+repeat task.wait() until game:IsLoaded()
+
+script_key= "RhSWkXPWcdQEOewTdCCWPZyskvRXlOkI";
+loadstring(game:HttpGet("https://raw.githubusercontent.com/TrkVulcan/Anime-adventuers/main/CartiHub"))()
+
+
+
